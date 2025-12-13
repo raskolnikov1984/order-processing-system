@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     DATABASE_URL: Optional[str] = None
 
-    class Config:
+    class ConfigDict:
         env_file = ".env"
 
 
