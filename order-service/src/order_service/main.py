@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from order_service.api.v1.endpoints import orders
+from src.order_service.api.v1.endpoints import orders
 
 app = FastAPI()
 
