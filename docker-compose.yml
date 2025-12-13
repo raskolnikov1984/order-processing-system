@@ -1,0 +1,7 @@
+services:
+  order-service:
+    build: ./order-service
+    ports:
+      - "${ORDER_API_PORT:-8010}:8010"
+    env_file:
+      - .env
