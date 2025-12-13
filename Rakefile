@@ -8,6 +8,11 @@ task :up do
   compose('up', '--build', '-d')
 end
 
+desc 'reiniciar entorno'
+task :restart do
+  compose('restart', compose: COMPOSE_TEST)
+end
+
 desc 'Eliminar Entorno'
 task :del do
   compose('down', '-v', '--rmi', 'all', compose: COMPOSE_TEST)
