@@ -1,7 +1,10 @@
-#!/usr/bin/env python3
 from fastapi import FastAPI
+from order_service.api.v1.endpoints import orders
 
 app = FastAPI()
+
+
+app.include_router(orders.router, prefix="", tags=["create_order"])
 
 
 @app.get("/")
