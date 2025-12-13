@@ -21,14 +21,15 @@ app.include_router(
     orders.router, prefix=f"{settings.API_V1_STR}", tags=["create_order"])
 
 
-@app.get("/")
+
+@app.get("/api/v1/")
 async def root():
     return {
         "message": "Bienvenido, Este es un Microservicio Para Crear Ordenes"
     }
 
 
-@app.get("/health")
+@app.get("/api/v1/health")
 async def health_check():
     return {
         "status": "healthy"
