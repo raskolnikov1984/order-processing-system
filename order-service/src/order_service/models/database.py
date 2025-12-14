@@ -27,3 +27,11 @@ async def db_create_order(order: Order, session: Session) -> OrderSQL:
     await session.refresh(new_order)
 
     return new_order
+
+
+async def db_get_order_status(order_id: int, session: Session) -> str:
+    order = await session.get(OrderSQL, order_id)
+
+    if order:
+        return order.status
+    return ""

@@ -27,3 +27,22 @@ async def test_create_order_success(
     assert db_order is not None, "La orden no se guardó en la base de datos"
     assert db_order.customer_id == "customer-123"
     assert db_order.status == "PENDING"
+
+
+@pytest.mark.anyio
+async def test_get_order_status(async_client: AsyncClient, order: dict):
+    response = await async_client.post('/create_order', json=order)
+    order_id = response.json()["order_id"]
+
+    response = await async_client.get(f'/order_status/{order_id}')
+    response_data = response.json()
+    assert response.status_code == 200
+    assert response_data["order_status"] == "PENDING"
+
+
+@pytest.mark.anyio
+async def test_get_order_status_order_not_found(async_client: AsyncClient):
+    response = await async_client.get('/order_status/10000')
+    response_data = response.json()
+    assert response.status_code == 404
+    assert response_data["detail"] == "Order Id: 10000 Not Found"

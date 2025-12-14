@@ -3,7 +3,9 @@ from sqlalchemy.orm import Session
 from src.order_service.api.dependencies import get_async_session
 from src.order_service.models.schemas import Order
 from src.order_service.models.database import (
-    db_create_order)
+    db_create_order,
+    db_get_order_status
+)
 
 router = APIRouter()
 
@@ -29,3 +31,30 @@ async def create_order(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo crear la orden. Por favor, intente nuevamente."
         )
+
+
+@router.get("/order_status/{order_id}", status_code=status.HTTP_200_OK)
+async def order_status(
+        order_id: int, session: Session = Depends(get_async_session)):
+
+    try:
+        order_status = await db_get_order_status(order_id, session)
+
+        if order_status:
+            return {
+                "message": "successful",
+                "order_status": order_status
+            }
+    except Exception as e:
+        print(f"Error al crear orden: {str(e)}")
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=(
+                "No se pudo encontrar la orden."
+                "Por favor, intente nuevamente.")
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Order Id: {order_id} Not Found")
