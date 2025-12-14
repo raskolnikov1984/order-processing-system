@@ -1,13 +1,19 @@
 from sqlalchemy.ext.asyncio import (
     AsyncSession, create_async_engine, async_sessionmaker)
 from sqlalchemy.pool import NullPool
+from .settings import Settings
 
-DATABASE_URL = "sqlite+aiosqlite:///test.db"
+settings = Settings()
+
+DATABASE_URL = (
+    f"postgresql+asyncpg://{settings.POSTGRES_USER}:"
+    f"{settings.POSTGRES_PASSWORD}@order-db:5432/{settings.DATABASE}"
+)
 
 engine = create_async_engine(
     DATABASE_URL,
-    echo=True,  # Muestra las consultas SQL en consola (solo desarrollo)
-    poolclass=NullPool,  # Para SQLite evita problemas con conexiones
+    echo=True,
+    poolclass=NullPool,
     future=True,
 )
 
@@ -35,9 +41,9 @@ async def get_async_session() -> AsyncSession:
     async with AsyncSessionLocal() as session:
         try:
             yield session
-            await session.commit()  # Commit automático al finalizar
+            await session.commit()
         except Exception:
-            await session.rollback()  # Rollback automático en error
+            await session.rollback()
             raise
         finally:
             await session.close()
