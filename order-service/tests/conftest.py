@@ -65,7 +65,7 @@ async def async_client(async_session_maker):
 
 
 @pytest.fixture(scope="function")
-async def db_session(async_session_maker):
+async def async_session(async_session_maker):
     """Sesión directa para tests que necesiten acceso a BD"""
     async with async_session_maker() as session:
         yield session
