@@ -1,0 +1,29 @@
+from sqlalchemy import Column, String, Integer, Numeric, DateTime
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.dialects.postgresql import UUID
+import datetime
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class OrderSQL(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    customer_id = Column(String, nullable=False)
+    total_amount = Column(Numeric(10, 2), nullable=True)
+    status = Column(String, default="PENDING", nullable=True)
+    created_at = Column(
+        DateTime, default=datetime.datetime.now(datetime.UTC))
+
+
+class OrderItemSQL(Base):
+    __tablename__ = "order_items"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    order_id = Column(UUID(as_uuid=True), nullable=False)
+    product_id = Column(String, nullable=False)
+    quantity = Column(Integer, nullable=False)
+    price = Column(Numeric(10, 2), nullable=False)
