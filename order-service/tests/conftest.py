@@ -1,38 +1,40 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    create_async_engine, async_sessionmaker, AsyncSession)
 from sqlalchemy.pool import StaticPool
 from src.order_service.api.dependencies import get_async_session
 from src.order_service.main import app
 from src.order_service.models.models import Base
 
+
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-engine = create_async_engine(
-    TEST_DATABASE_URL,
-    echo=True,
-    poolclass=StaticPool,
-)
-TestingSessionLocal = async_sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-    expire_on_commit=False,
-)
+
+@pytest.fixture(scope="function")
+def engine():
+    """Crea el engine async para cada test"""
+    return create_async_engine(
+        TEST_DATABASE_URL,
+        echo=True,
+        poolclass=StaticPool
+    )
 
 
-async def override_get_async_session():
-    database = TestingSessionLocal()
-    yield database
-    await database.close()
-
-
-app.dependency_overrides[get_async_session] = override_get_async_session
+@pytest.fixture(scope="function")
+def async_session_maker(engine):
+    """Factory de sesiones async"""
+    return async_sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
 
 
 @pytest.fixture(autouse=True, scope="function")
-async def setup_database():
-    """Crea todas las tablas antes de cada test y las elimina después"""
+async def setup_database(engine):
+    """Setup y teardown automático de la base de datos para cada test"""
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
@@ -42,14 +44,32 @@ async def setup_database():
         await conn.run_sync(Base.metadata.drop_all)
 
 
-@pytest.fixture
-async def async_client():
-    """Cliente asíncrono para hacer peticiones a la API"""
+@pytest.fixture(scope="function")
+async def async_client(async_session_maker):
+    """Cliente HTTP async con override de dependencia"""
+
+    async def override_get_async_session():
+        """Crea una nueva sesión por cada request"""
+        async with async_session_maker() as session:
+            yield session
+
+    app.dependency_overrides[get_async_session] = override_get_async_session
+
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test/api/v1"
     ) as client:
         yield client
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+async def db_session(async_session_maker):
+    """Sesión directa para tests que necesiten acceso a BD"""
+    async with async_session_maker() as session:
+        yield session
+        await session.rollback()
 
 
 @pytest.fixture
@@ -62,11 +82,3 @@ def order():
             {"product_id": "product-2", "quantity": 1}
         ]
     }
-
-
-@pytest.fixture
-async def db_session():
-    """Proporciona una sesión de BD para tests que necesiten acceso directo"""
-    async with TestingSessionLocal() as session:
-        yield session
-        await session.rollback()
