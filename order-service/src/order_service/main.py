@@ -21,7 +21,6 @@ app.include_router(
     orders.router, prefix=f"{settings.API_V1_STR}", tags=["create_order"])
 
 
-
 @app.get("/api/v1/")
 async def root():
     return {
