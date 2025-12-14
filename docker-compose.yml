@@ -1,9 +1,32 @@
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "${AMQP_PORT:-5672}:5672"
+      - "${UI_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
   order-db:
     image: postgres:18
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_ORDER_DB}
+    volumes:
+      - order_data:/var/lib/postgresql
+  inventory-db:
+    image: postgres:18
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_INVENTORY_DB}
+    volumes:
+      - inventory_data:/var/lib/postgresql
+  payment-db:
+    image: postgres:18
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_PAYMENT_DB}
+    volumes:
+      - payment_data:/var/lib/postgresql
   order-service:
     build: ./order-service
     ports:
@@ -14,5 +37,38 @@ services:
       - order-db
     env_file:
       - .env
+  inventory-service:
+    build: ./inventory-service
+    ports:
+      - "${INVENTORY_API_PORT:-8010}:8011"
+    volumes:
+      - ./inventory-service:/app
+    depends_on:
+      - inventory-db
+    env_file:
+      - .env
+  payment-service:
+    build: ./payment-service
+    ports:
+      - "${PAYMENT_API_PORT:-8010}:8012"
+    volumes:
+      - ./payment-service:/app
+    depends_on:
+      - payment-db
+    env_file:
+      - .env
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "${NOTIFICATION_API_PORT:-8010}:8013"
+    volumes:
+      - ./notification-service:/app
+    env_file:
+      - .env
+
 volumes:
+  rabbitmq_data:
+  order_data:
+  inventory_data:
+  payment_data:
   order-service:
