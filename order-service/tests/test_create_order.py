@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 
 @pytest.mark.anyio
-async def test_create_order(
+async def test_create_order_success(
         async_client: AsyncClient, async_session: AsyncSession, order: dict):
     response = await async_client.post('/create_order', json=order)
 
