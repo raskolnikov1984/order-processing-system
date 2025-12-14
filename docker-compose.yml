@@ -1,4 +1,9 @@
 services:
+  order-db:
+    image: postgres:18
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_ORDER_DB}
   order-service:
     build: ./order-service
     ports:
