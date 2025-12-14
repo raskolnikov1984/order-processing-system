@@ -29,6 +29,12 @@ namespace :order do
   task :tdd do
     compose('exec', 'order-service', 'pytest -vvv')
   end
+
+  desc 'Order Service Crear y Aplicar Migracion'
+  task :migrate, [:description]  do |_, args|
+    compose('exec', 'order-service', "alembic revision --autogenerate -m '#{args.description}'")
+    compose('exec', 'order-service', 'alembic upgrade head')
+  end
 end
 
 DOCKER_COMPOSE_TEST=COMPOSE_TEST

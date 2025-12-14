@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, Numeric, DateTime
 from sqlalchemy.orm import DeclarativeBase
-import datetime
+from sqlalchemy.sql import func
 
 
 class Base(DeclarativeBase):
@@ -14,8 +14,7 @@ class OrderSQL(Base):
     customer_id = Column(String, nullable=False)
     total_amount = Column(Numeric(10, 2), nullable=True)
     status = Column(String, default="PENDING", nullable=True)
-    created_at = Column(
-        DateTime, default=datetime.datetime.now(datetime.UTC))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class OrderItemSQL(Base):
@@ -25,5 +24,4 @@ class OrderItemSQL(Base):
     order_id = Column(Integer, nullable=False)
     product_id = Column(String, nullable=False)
     quantity = Column(Integer, nullable=False)
-    created_at = Column(
-        DateTime, default=datetime.datetime.now(datetime.UTC))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
