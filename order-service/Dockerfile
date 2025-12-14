@@ -19,4 +19,4 @@ COPY ./tests ./tests
 COPY ./src ./src
 
 EXPOSE 8010
-CMD ["uvicorn", "src.order_service.main:app", "--host", "0.0.0.0", "--port", "8010"]
+CMD ["uvicorn", "src.order_service.main:app", "--host", "0.0.0.0", "--port", "8010", "--reload"]
