@@ -13,6 +13,12 @@ services:
       - POSTGRES_DB=${POSTGRES_ORDER_DB}
     volumes:
       - order_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U postgres -d ${POSTGRES_ORDER_DB} -c 'SELECT 1' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   inventory-db:
     image: postgres:18
     environment:
@@ -20,6 +26,12 @@ services:
       - POSTGRES_DB=${POSTGRES_INVENTORY_DB}
     volumes:
       - inventory_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U postgres -d ${POSTGRES_INVENTORY_DB} -c 'SELECT 1' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   payment-db:
     image: postgres:18
     environment:
@@ -27,34 +39,49 @@ services:
       - POSTGRES_DB=${POSTGRES_PAYMENT_DB}
     volumes:
       - payment_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U postgres -d ${POSTGRES_PAYMENT_DB} -c 'SELECT 1' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   order-service:
     build: ./order-service
     ports:
       - "${ORDER_API_PORT:-8010}:8010"
+    environment:
+      - POSTGRES_DB=${POSTGRES_ORDER_DB}
     volumes:
       - ./order-service:/app
     depends_on:
-      - order-db
+      order-db:
+        condition: service_healthy
     env_file:
       - .env
   inventory-service:
     build: ./inventory-service
     ports:
       - "${INVENTORY_API_PORT:-8011}:8010"
+    environment:
+      - POSTGRES_DB=${POSTGRES_INVENTORY_DB}
     volumes:
       - ./inventory-service:/app
     depends_on:
-      - inventory-db
+      inventory-db:
+        condition: service_healthy
     env_file:
       - .env
   payment-service:
     build: ./payment-service
     ports:
       - "${PAYMENT_API_PORT:-8012}:8010"
+    environment:
+      - POSTGRES_DB=${POSTGRES_PAYMENT_DB}
     volumes:
       - ./payment-service:/app
     depends_on:
-      - payment-db
+      payment-db:
+        condition: service_healthy
     env_file:
       - .env
   notification-service:

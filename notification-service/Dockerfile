@@ -15,8 +15,8 @@ COPY pyproject.toml poetry.lock* ./
 
 RUN poetry install --no-ansi && rm -rf $POETRY_CACHE_DIR
 
-COPY ./tests ./tests
-COPY ./src ./src
+COPY . .
 
 EXPOSE 8010
+
 CMD ["sh", "-c", "uvicorn src.notification_service.main:app --host 0.0.0.0 --port 8010 --reload"]
