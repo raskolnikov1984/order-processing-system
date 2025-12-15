@@ -15,7 +15,7 @@ end
 
 desc 'Eliminar Entorno'
 task :del do
-  compose('down', '-v', '--rmi', 'all', compose: COMPOSE_TEST)
+  compose('down', '-vv', '--rmi', 'all', compose: COMPOSE_TEST)
 end
 
 desc 'Order Service'

@@ -18,5 +18,7 @@ RUN poetry install --no-ansi && rm -rf $POETRY_CACHE_DIR
 COPY ./tests ./tests
 COPY ./src ./src
 
+
+
 EXPOSE 8010
-CMD ["sh", "-c", "alembic upgrade head && uvicorn src.inventory_service.main:app --host 0.0.0.0 --port 8010 --reload"]
+CMD ["sh", "-c", "alembic revision --autogenerate -m 'Initial Tables' && alembic upgrade head && uvicorn src.inventory_service.main:app --host 0.0.0.0 --port 8010 --reload"]
