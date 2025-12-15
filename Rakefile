@@ -37,6 +37,20 @@ namespace :order do
   end
 end
 
+desc 'Inventory Service'
+namespace :inventory do
+  desc 'Inventory Service TDD'
+  task :tdd do
+    compose('exec', 'inventory-service', 'pytest -vvv')
+  end
+
+  desc 'Inventory Service Shell'
+  task :sh do
+    compose('exec', 'inventory-service', 'bash')
+  end
+
+end
+
 DOCKER_COMPOSE_TEST=COMPOSE_TEST
 def compose(*arg, compose: DOCKER_COMPOSE_TEST)
   sh "docker compose -f #{compose} #{arg.join(' ')}"
