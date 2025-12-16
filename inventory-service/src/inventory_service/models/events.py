@@ -47,7 +47,7 @@ class InventoryUnavailableEvent(BaseModel):
     event_id: str = Field(
         default_factory=lambda: f"evt_{datetime.now(UTC)}"
     )
-    event_type: EventType = EventType.INVENTORY_RESERVED
+    event_type: EventType = EventType.INVENTORY_UNAVAILABLE
     timestamp: datetime = Field(
         default_factory=lambda: datetime.now(UTC))
     order_id: str

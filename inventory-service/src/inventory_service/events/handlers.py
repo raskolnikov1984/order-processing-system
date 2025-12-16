@@ -15,27 +15,20 @@ async def handle_order_created(event_data: dict):
     """Maneja creación de orden: reserva inventario o emite fallo"""
     logger.info(f"📦 OrderCreated recibido: {event_data['order_id']}")
 
-    # Convertir a modelo Pydantic
     order_event = OrderCreatedEvent(**event_data)
 
-    # Obtener servicio de inventario
     service = get_inventory_service()
 
-    # Intentar reserva
     success, error_message = await service.reserve_inventory(order_event)
 
     if success:
-        # ✅ Éxito: publicar InventoryReserved
-        logger.info(f"✅ Inventario reservado para orden {order_event.order_id}")
-
+        logger.info(f"Inventario reservado para orden {order_event.order_id}")
         reserved_event = InventoryReservedEvent(
             order_id=order_event.order_id,
             reservation_id=f"res_{order_event.order_id}"
         )
         await publish_inventory_reserved(reserved_event)
-
     else:
-        # ❌ Fallo: publicar InventoryUnavailable
         logger.error(f"❌ Inventario NO disponible: {error_message}")
 
         unavailable_event = InventoryUnavailableEvent(
@@ -44,6 +37,17 @@ async def handle_order_created(event_data: dict):
         )
         await publish_inventory_unavailable(unavailable_event)
 
+
+@event_router.register_decorator("InventoryReserved")
+async def handle_inventory_reserved(event_data: dict):
+    """Maneja orden cancelada: libera inventario"""
+    logger.warning(f"InventoryReserved: {event_data['order_id']}")
+
+
+@event_router.register_decorator("InventoryUnavailable")
+async def handle_inventory_unavailable(event_data: dict):
+    """Maneja orden cancelada: libera inventario"""
+    logger.warning(f"InventoryUnavailable: {event_data['order_id']}")
 
 
 @event_router.register_decorator("OrderCancelled")

@@ -34,7 +34,7 @@ rabbitmq_client: Optional[RabbitMQClient] = RabbitMQClient(
     os.getenv("AMQP_URL"))
 
 
-inventory_service: InventoryService | None = None
+inventory_service: InventoryService | None = InventoryService(AsyncSessionLocal())
 
 
 def get_rabbitmq_client() -> RabbitMQClient:
