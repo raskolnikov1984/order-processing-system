@@ -5,6 +5,7 @@ from sqlalchemy.pool import NullPool
 from .settings import Settings
 from src.order_service.core.rabbitmq import RabbitMQClient
 import os
+
 settings = Settings()
 
 DATABASE_URL = (

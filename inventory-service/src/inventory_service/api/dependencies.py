@@ -1,7 +1,10 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import (
     AsyncSession, create_async_engine, async_sessionmaker)
 from sqlalchemy.pool import NullPool
 from .settings import Settings
+from src.inventory_service.core.rabbitmq import RabbitMQClient
+import os
 
 settings = Settings()
 
@@ -24,6 +27,17 @@ AsyncSessionLocal = async_sessionmaker(
     autocommit=False,
     autoflush=False,
 )
+
+
+rabbitmq_client: Optional[RabbitMQClient] = RabbitMQClient(
+    os.getenv("AMQP_URL"))
+
+
+def get_rabbitmq_client() -> RabbitMQClient:
+    """Dependency para FastAPI"""
+    if not rabbitmq_client:
+        raise RuntimeError("RabbitMQ no inicializado")
+    return rabbitmq_client
 
 
 async def get_async_session() -> AsyncSession:

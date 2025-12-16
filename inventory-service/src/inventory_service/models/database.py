@@ -25,3 +25,7 @@ async def db_create_inventory(inventory: dict, session: Session):
     await session.refresh(new_inventory)
 
     return new_inventory
+
+
+def update_order_status():
+    pass
