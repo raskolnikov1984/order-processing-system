@@ -6,6 +6,12 @@ services:
       - "${UI_PORT:-15672}:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq/
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   order-db:
     image: postgres:18
     environment:
@@ -50,10 +56,19 @@ services:
     ports:
       - "${ORDER_API_PORT:-8010}:8010"
     environment:
+      - AMQP_URL=${AMQP_URL}
       - POSTGRES_DB=${POSTGRES_ORDER_DB}
     volumes:
       - ./order-service:/app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -X 'GET' 'http://localhost:8010/api/v1/health' -H 'accept: application/json'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     depends_on:
+      rabbitmq:
+        condition: service_healthy
       order-db:
         condition: service_healthy
     env_file:
@@ -63,12 +78,18 @@ services:
     ports:
       - "${INVENTORY_API_PORT:-8011}:8010"
     environment:
+      - AMQP_URL=${AMQP_URL}
       - POSTGRES_DB=${POSTGRES_INVENTORY_DB}
     volumes:
       - ./inventory-service:/app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -X 'GET' 'http://localhost:8010/api/v1/health' -H 'accept: application/json'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     depends_on:
-      inventory-db:
-        condition: service_healthy
+      - rabbitmq
+      - inventory-db
     env_file:
       - .env
   payment-service:
@@ -76,20 +97,35 @@ services:
     ports:
       - "${PAYMENT_API_PORT:-8012}:8010"
     environment:
+      - AMQP_URL=${AMQP_URL}
       - POSTGRES_DB=${POSTGRES_PAYMENT_DB}
     volumes:
       - ./payment-service:/app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -X 'GET' 'http://localhost:8010/api/v1/health' -H 'accept: application/json'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     depends_on:
-      payment-db:
-        condition: service_healthy
+      - rabbitmq
+      - payment-db
     env_file:
       - .env
   notification-service:
     build: ./notification-service
     ports:
       - "${NOTIFICATION_API_PORT:-8013}:8010"
+    environment:
+      - AMQP_URL=${AMQP_URL}
     volumes:
       - ./notification-service:/app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -X 'GET' 'http://localhost:8010/api/v1/health' -H 'accept: application/json'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - rabbitmq
     env_file:
       - .env
 

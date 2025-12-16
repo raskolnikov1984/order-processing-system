@@ -35,3 +35,7 @@ async def db_get_order_status(order_id: int, session: Session) -> str:
     if order:
         return order.status
     return ""
+
+
+def update_order_status():
+    pass

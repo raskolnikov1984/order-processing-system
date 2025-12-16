@@ -1,11 +1,35 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from src.order_service.api.v1.endpoints import orders
 from src.order_service.core.config import settings
+from src.order_service.events.consumers import start_consumers
+from src.order_service.api.dependencies import rabbitmq_client
+import asyncio
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    print("🚀 Iniciando Order Service...")
+
+    # Conectar RabbitMQ
+    await rabbitmq_client.connect()
+
+    # Iniciar consumidores en background
+    asyncio.create_task(start_consumers())
+
+    yield
+
+    # Shutdown
+    print("🔻 Apagando Order Service...")
+
+    await rabbitmq_client.disconnect()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
+    lifespan=lifespan,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
