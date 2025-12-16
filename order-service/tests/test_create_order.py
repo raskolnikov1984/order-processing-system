@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.order_service.models.models import OrderSQL
@@ -6,8 +7,12 @@ from sqlalchemy import select
 
 
 @pytest.mark.anyio
+@patch("src.order_service.api.v1.endpoints.orders.publish_order_created")
 async def test_create_order_success(
-        async_client: AsyncClient, async_session: AsyncSession, order: dict):
+        mock_publish,
+        async_client: AsyncClient,
+        async_session: AsyncSession, order: dict):
+
     response = await async_client.post('/create_order', json=order)
 
     assert response.status_code == 201
@@ -28,10 +33,17 @@ async def test_create_order_success(
     assert db_order.customer_id == "customer-123"
     assert db_order.status == "PENDING"
 
+    mock_publish.assert_called_once()
+
 
 @pytest.mark.anyio
-async def test_get_order_status(async_client: AsyncClient, order: dict):
+@patch("src.order_service.api.v1.endpoints.orders.publish_order_created")
+async def test_get_order_status(
+        mock_publish, async_client: AsyncClient, order: dict):
     response = await async_client.post('/create_order', json=order)
+
+    mock_publish.assert_called_once()
+
     assert response.status_code == 201
     order_id = response.json()["order_id"]
 
