@@ -25,7 +25,9 @@ async def db_create_order(order: Order, session: Session) -> OrderSQL:
         order_item = OrderItemSQL(
             order_id=new_order.id,
             product_id=item.product_id,
+            product_name=item.product_name,
             quantity=int(item.quantity),
+            price=item.price,
             created_at=datetime.datetime.now(datetime.UTC)
         )
         session.add(order_item)
