@@ -84,10 +84,22 @@ def order():
     """Datos de ejemplo para una orden"""
     return {
         "customer_id": "customer-123",
+        "customer_email": "customer@mail.com",
         "items": [
-            {"product_id": "product-1", "quantity": 2},
-            {"product_id": "product-2", "quantity": 1}
-        ]
+            {
+                "product_id": "product-1",
+                "product_name": "Wizard1",
+                "quantity": 2,
+                "price": 39.0
+            },
+            {
+                "product_id": "product-2",
+                "product_name": "Wizard2",
+                "quantity": 1,
+                "price": 45.0
+            }
+        ],
+        "total_amount": 84.0
     }
 
 
