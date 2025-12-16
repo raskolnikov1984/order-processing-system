@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession, create_async_engine, async_sessionmaker)
 from sqlalchemy.pool import NullPool
 from .settings import Settings
+from src.inventory_service.services.inventory_service import InventoryService
 from src.inventory_service.core.rabbitmq import RabbitMQClient
 import os
 
@@ -33,6 +34,9 @@ rabbitmq_client: Optional[RabbitMQClient] = RabbitMQClient(
     os.getenv("AMQP_URL"))
 
 
+inventory_service: InventoryService | None = None
+
+
 def get_rabbitmq_client() -> RabbitMQClient:
     """Dependency para FastAPI"""
     if not rabbitmq_client:
@@ -61,3 +65,10 @@ async def get_async_session() -> AsyncSession:
             raise
         finally:
             await session.close()
+
+
+def get_inventory_service() -> InventoryService:
+    """Dependency para FastAPI"""
+    if not inventory_service:
+        raise RuntimeError("InventoryService no inicializado")
+    return inventory_service

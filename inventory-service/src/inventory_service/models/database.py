@@ -27,5 +27,5 @@ async def db_create_inventory(inventory: dict, session: Session):
     return new_inventory
 
 
-def update_order_status():
+def update_order_status(order_id: str):
     pass

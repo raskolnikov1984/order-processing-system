@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.pool import StaticPool
 from src.inventory_service.api.dependencies import get_async_session
 from src.inventory_service.main import app
-from src.inventory_service.models.models import Base, InventorySQL
+from src.inventory_service.models.models import Base
 
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -82,4 +82,29 @@ def inventory():
     return {
         "product_id": "product-123",
         "forecast_quantity": 3.0
+    }
+
+
+@pytest.fixture
+def order_created_event():
+    return {
+        "event_id": "evt-123",
+        "event_type": "OrderCreated",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "order_id": "test-123",
+        "items": [
+            {
+                "product_id": "product-1",
+                "product_name": "Wizard1",
+                "quantity": 2,
+                "price": 39.0
+            },
+            {
+                "product_id": "product-2",
+                "product_name": "Wizard2",
+                "quantity": 1,
+                "price": 45.0
+            }
+        ],
+        "total_amount": 59.98
     }

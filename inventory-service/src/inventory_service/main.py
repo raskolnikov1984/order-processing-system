@@ -4,7 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.inventory_service.api.v1.endpoints import inventory
 from src.inventory_service.core.config import settings
 from src.inventory_service.events.consumers import start_consumers
+from src.inventory_service.services.inventory_service import InventoryService
 from src.inventory_service.api.dependencies import rabbitmq_client
+from src.inventory_service.api.dependencies import AsyncSessionLocal
+from src.inventory_service.events import handlers
+
 from src.inventory_service.logger import logger
 import asyncio
 
@@ -14,9 +18,14 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Iniciando Inventory Service...")
 
+    global inventory_service
+    inventory_service = InventoryService(AsyncSessionLocal)
+
     # Conectar RabbitMQ
     await rabbitmq_client.connect()
 
+    logger.info(
+        f"Handlers registrados: {list(handlers.event_router.handlers.keys())}")
     # Iniciar consumidores en background
     asyncio.create_task(start_consumers())
 
