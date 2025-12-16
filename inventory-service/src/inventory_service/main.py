@@ -26,12 +26,11 @@ async def lifespan(app: FastAPI):
 
     logger.info(
         f"Handlers registrados: {list(handlers.event_router.handlers.keys())}")
-    # Iniciar consumidores en background
+
     asyncio.create_task(start_consumers())
 
     yield
 
-    # Shutdown
     logger.info("Apagando Inventory Service...")
 
     await rabbitmq_client.disconnect()
