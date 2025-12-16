@@ -54,7 +54,7 @@ async def create_order(
             "status": "PENDING"
         }
     except Exception as e:
-        logger.erro(f"Error al crear orden: {str(e)}")
+        logger.error(f"Error al crear orden: {str(e)}")
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -75,7 +75,7 @@ async def order_status(
                 "order_status": order_status
             }
     except Exception as e:
-        logger.erro(f"Error al obtener orden status: {str(e)}")
+        logger.error(f"Error al obtener orden status: {str(e)}")
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
