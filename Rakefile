@@ -35,6 +35,11 @@ namespace :order do
     compose('exec', 'order-service', "alembic revision --autogenerate -m '#{args.description}'")
     compose('exec', 'order-service', 'alembic upgrade head')
   end
+
+  desc 'Monitorear salida Order Service'
+  task :tail do
+    compose('logs', '-f', '-n 50', 'order-service', compose: COMPOSE_TEST)
+  end
 end
 
 desc 'Inventory Service'
@@ -47,6 +52,11 @@ namespace :inventory do
   desc 'Inventory Service Shell'
   task :sh do
     compose('exec', 'inventory-service', 'bash')
+  end
+
+  desc 'Monitorear salida Inventory Service'
+  task :tail do
+    compose('logs', '-f', '-n 50', 'inventory-service', compose: COMPOSE_TEST)
   end
 
 end
