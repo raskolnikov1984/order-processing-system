@@ -9,6 +9,7 @@ from src.order_service.models.database import (
     db_get_order_status
 )
 from src.order_service.events.publishers import publish_order_created
+from src.order_service.logger import logger
 
 
 router = APIRouter()
@@ -53,7 +54,7 @@ async def create_order(
             "status": "PENDING"
         }
     except Exception as e:
-        print(f"Error al crear orden: {str(e)}")
+        logger.erro(f"Error al crear orden: {str(e)}")
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -74,7 +75,7 @@ async def order_status(
                 "order_status": order_status
             }
     except Exception as e:
-        print(f"Error al crear orden: {str(e)}")
+        logger.erro(f"Error al obtener orden status: {str(e)}")
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

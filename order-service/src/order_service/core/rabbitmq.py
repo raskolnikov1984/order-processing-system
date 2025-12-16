@@ -3,6 +3,7 @@ from typing import Optional, Callable, Any
 from aio_pika import connect_robust, Message, ExchangeType
 from aio_pika.abc import AbstractConnection, AbstractChannel, AbstractExchange
 from pydantic import BaseModel
+from src.order_service.logger import logger
 
 
 class RabbitMQClient:
@@ -26,13 +27,15 @@ class RabbitMQClient:
             ExchangeType.TOPIC,
             durable=True,
         )
-        print(f"✅ Conectado a RabbitMQ: {self.exchange_name}")
+
+        logger.info(f"Conectado a RabbitMQ: {self.exchange_name}")
 
     async def disconnect(self) -> None:
         """Cierra conexión de forma segura"""
         if self.connection:
             await self.connection.close()
-            print("🔌 Desconectado de RabbitMQ")
+
+            logger.info("Desconectado de RabbitMQ")
 
     async def publish_event(self, routing_key: str, event: BaseModel) -> None:
         """Publica un evento al exchange"""
@@ -51,7 +54,7 @@ class RabbitMQClient:
         )
 
         await self.exchange.publish(message, routing_key=routing_key)
-        print(f"📤 Evento publicado: {routing_key} - {event.model_dump()}")
+        logger.info(f"Evento publicado: {routing_key} - {event.model_dump()}")
 
     async def setup_consumer(
         self,
@@ -75,7 +78,8 @@ class RabbitMQClient:
         # Binding múltiples routing keys
         for routing_key in routing_keys:
             await queue.bind(self.exchange_name, routing_key=routing_key)
-            print(f"🔗 Cola '{queue_name}' bind a '{routing_key}'")
+
+            logger.info(f"Cola '{queue_name}' bind a '{routing_key}'")
 
         # Inicia consumidor
         async with queue.iterator() as queue_iter:
@@ -85,6 +89,8 @@ class RabbitMQClient:
                         body = json.loads(message.body.decode())
                         await callback(body)
                     except Exception as e:
-                        print(f"❌ Error procesando mensaje: {e}")
+                        logger.error(
+                            f"❌ Error procesando mensaje: {e}"
+                        )
                         # NACK para requeue o DLQ
                         await message.nack(requeue=False)

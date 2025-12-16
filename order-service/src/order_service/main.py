@@ -5,13 +5,14 @@ from src.order_service.api.v1.endpoints import orders
 from src.order_service.core.config import settings
 from src.order_service.events.consumers import start_consumers
 from src.order_service.api.dependencies import rabbitmq_client
+from src.order_service.logger import logger
 import asyncio
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("🚀 Iniciando Order Service...")
+    logger.info("Iniciando Order Service...")
 
     # Conectar RabbitMQ
     await rabbitmq_client.connect()
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown
-    print("🔻 Apagando Order Service...")
+    logger.info("Apagando Order Service...")
 
     await rabbitmq_client.disconnect()
 
