@@ -3,7 +3,9 @@ from unittest.mock import patch
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.order_service.models.models import OrderSQL
+from src.order_service.models.events import OrderCreatedEvent
 from sqlalchemy import select
+from decimal import Decimal
 
 
 @pytest.mark.anyio
@@ -31,9 +33,14 @@ async def test_create_order_success(
 
     assert db_order is not None, "La orden no se guardó en la base de datos"
     assert db_order.customer_id == "customer-123"
+    assert db_order.customer_email == "customer@mail.com"
+    assert db_order.total_amount == Decimal("123.00")
     assert db_order.status == "PENDING"
 
     mock_publish.assert_called_once()
+
+    event_passed = mock_publish.call_args[0][0]  # El primer argumento
+    assert isinstance(event_passed, OrderCreatedEvent)
 
 
 @pytest.mark.anyio

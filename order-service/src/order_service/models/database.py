@@ -6,9 +6,16 @@ import datetime
 
 async def db_create_order(order: Order, session: Session) -> OrderSQL:
 
+    total_amount = sum(
+        item.price * item.quantity
+        for item in order.items if item.price and item.quantity
+    )
+
     new_order = OrderSQL(
         customer_id=order.customer_id,
-        created_at=datetime.datetime.now(datetime.UTC)
+        customer_email=order.customer_email,
+        created_at=datetime.datetime.now(datetime.UTC),
+        total_amount=total_amount
     )
 
     session.add(new_order)

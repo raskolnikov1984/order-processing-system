@@ -5,6 +5,7 @@ from src.order_service.models.database import (
     db_get_order_status
 )
 from src.order_service.models.schemas import Order
+from decimal import Decimal
 
 
 @pytest.mark.anyio
@@ -14,7 +15,7 @@ async def test_db_create_order(order: Order, async_session: AsyncSession):
 
     assert new_order.id == 1
     assert new_order.customer_id == "customer-123"
-    assert new_order.total_amount is None
+    assert new_order.total_amount == Decimal("123.00")
     assert new_order.status == "PENDING"
 
 
