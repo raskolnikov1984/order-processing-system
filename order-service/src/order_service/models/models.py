@@ -12,6 +12,7 @@ class OrderSQL(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     customer_id = Column(String, nullable=False)
+    customer_email = Column(String, nullable=True)
     total_amount = Column(Numeric(10, 2), nullable=True)
     status = Column(String, default="PENDING", nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
