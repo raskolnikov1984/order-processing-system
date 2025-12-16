@@ -32,6 +32,7 @@ async def test_create_order_success(
 @pytest.mark.anyio
 async def test_get_order_status(async_client: AsyncClient, order: dict):
     response = await async_client.post('/create_order', json=order)
+    assert response.status_code == 201
     order_id = response.json()["order_id"]
 
     response = await async_client.get(f'/order_status/{order_id}')
