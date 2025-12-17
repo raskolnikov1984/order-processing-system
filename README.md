@@ -139,3 +139,43 @@ rake pay:migrate['add payment_method enum']
 # 2. alembic upgrade head
 ```
 > Nota: El notification-service no tiene base de datos PostgreSQL configurada en docker-compose.yml, por lo que no tiene tarea migrate.
+
+
+# Seed
+
+Al Construir el entorno la tabla de Inventarios sera poblada con los siguiente informacion.
+
+| ID | product_id | forecast_quantity |
+|----|------------|-------------------|
+| 1  | prod-1     | 150.0             |
+| 2  | prod-2     | 200.0             |
+| 3  | prod-3     | 75.5              |
+| 4  | prod-4     | 300.0             |
+
+# Crear una Orden
+
+```
+# Query
+
+curl -X 'POST' \
+  'http://localhost:8010/api/v1/create_order' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "customer_id": "Empresa-1",
+  "customer_email": "empresa@empresa.org",
+  "items": [
+    {
+      "product_id": "prod-1",
+      "product_name": "prod",
+      "quantity": 32,
+      "price": 3000
+    }
+  ]
+}'
+
+# Response
+
+{"message":"successful","order_id":12,"status":"PENDING"}
+```
+
