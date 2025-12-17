@@ -25,6 +25,7 @@ async def handle_order_created(event_data: dict):
         logger.info(f"Inventario reservado para orden {order_event.order_id}")
         reserved_event = InventoryReservedEvent(
             order_id=order_event.order_id,
+            total_amount=order_event.total_amount,
             reservation_id=f"res_{order_event.order_id}"
         )
         await publish_inventory_reserved(reserved_event)

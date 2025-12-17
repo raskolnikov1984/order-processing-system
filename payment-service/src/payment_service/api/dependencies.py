@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession, create_async_engine, async_sessionmaker)
 from sqlalchemy.pool import NullPool
 from .settings import Settings
+from src.payment_service.services.payment_processor import PaymentProcessor
 from src.payment_service.core.rabbitmq import RabbitMQClient
 import os
 
@@ -30,6 +31,10 @@ AsyncSessionLocal = async_sessionmaker(
 
 rabbitmq_client: Optional[RabbitMQClient] = RabbitMQClient(
     os.getenv("AMQP_URL"))
+
+
+payment_processor: PaymentProcessor | None = PaymentProcessor(
+    AsyncSessionLocal())
 
 
 def get_rabbitmq_client() -> RabbitMQClient:
@@ -60,3 +65,10 @@ async def get_async_session() -> AsyncSession:
             raise
         finally:
             await session.close()
+
+
+def get_payment_processor() -> PaymentProcessor:
+    """Dependency para FastAPI"""
+    if not payment_processor:
+        raise RuntimeError("PaymentService no inicializado")
+    return payment_processor

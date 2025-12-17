@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from src.payment_service.core.config import settings
 from src.payment_service.events.consumers import start_consumers
+from src.payment_service.events import handlers
 from src.payment_service.api.dependencies import rabbitmq_client
 from src.payment_service.logger import logger
 import asyncio
@@ -10,20 +11,19 @@ import asyncio
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    logger.info("Iniciando Order Service...")
+    logger.info("💳 Iniciando Payment Service...")
 
-    # Conectar RabbitMQ
     await rabbitmq_client.connect()
 
-    # Iniciar consumidores en background
-    asyncio.create_task(start_consumers())
+    logger.info(
+        f"Handlers registrados: {list(handlers.event_router.handlers.keys())}")
+
+    consumer_task = asyncio.create_task(start_consumers())
 
     yield
 
-    # Shutdown
-    logger.info("Apagando Order Service...")
-
+    logger.info("Apagando Payment Service...")
+    consumer_task.cancel()
     await rabbitmq_client.disconnect()
 
 

@@ -35,17 +35,19 @@ async def create_order(
             for item in order.items
         ]
 
-        # Crear evento
+        total_amount = sum(
+            item.price * item.quantity
+            for item in order.items if item.price and item.quantity
+        )
+
         event = OrderCreatedEvent(
             order_id=str(new_order.id),
             customer_id=order.customer_id,
             customer_email=order.customer_email,
             items=event_items,
-            total_amount=order.total_amount
+            total_amount=total_amount
         )
 
-        # Publicar evento async (no bloquea la respuesta)
-        # Usar asyncio.create_task para no esperar
         asyncio.create_task(publish_order_created(event))
 
         return {

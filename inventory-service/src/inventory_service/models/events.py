@@ -41,6 +41,7 @@ class InventoryReservedEvent(BaseModel):
         default_factory=lambda: datetime.now(UTC))
     order_id: str
     reservation_id: str
+    total_amount: float
 
 
 class InventoryUnavailableEvent(BaseModel):

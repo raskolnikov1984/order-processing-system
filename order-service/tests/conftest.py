@@ -98,8 +98,7 @@ def order():
                 "quantity": 1,
                 "price": 45.0
             }
-        ],
-        "total_amount": 84.0
+        ]
     }
 
 

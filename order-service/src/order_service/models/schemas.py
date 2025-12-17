@@ -13,4 +13,3 @@ class Order(BaseModel):
     customer_id: str
     customer_email: str
     items: List[Item]
-    total_amount: float

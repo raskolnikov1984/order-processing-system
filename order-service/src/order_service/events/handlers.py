@@ -23,7 +23,7 @@ async def handle_inventory_reserved(event_data: dict):
     event = InventoryReservedEvent(**event_data)
     service = get_order_service()
 
-    await service.confirm_order(event.order_id)
+    await service.confirm_order(int(event.order_id))
 
     confirmed_event = OrderConfirmedEvent(
         order_id=event.order_id,
@@ -56,21 +56,10 @@ async def handle_inventory_unavailable(event_data: dict):
     await publish_order_cancelled(cancelled_event)
 
 
-@event_router.register_decorator("InventoryReserved")
-async def handle_inventory_reserved(event_data: dict) -> None:
-    """Maneja evento de inventario no disponible"""
-    logger.info(f"Inventario Disponible: {event_data}")
-
-
 @event_router.register_decorator("PaymentProcessed")
 async def handle_payment_processed(event_data: dict) -> None:
     """Maneja evento de pago exitoso"""
     logger.info(f"Pago procesado: {event_data}")
-
-    await update_order_status(
-        event_data["order_id"],
-        "COMPLETED"
-    )
 
 
 @event_router.register_decorator("PaymentFailed")
@@ -78,9 +67,3 @@ async def handle_payment_failed(event_data: dict) -> None:
     """Maneja evento de pago fallido"""
     logger.error(
         f"❌ Pago fallido: {event_data}")
-
-    await update_order_status(
-        event_data["order_id"],
-        "PAYMENT_FAILED",
-        reason=event_data.get("failure_reason")
-    )
