@@ -56,7 +56,7 @@ async def test_handle_inventory_reserved_payment_failure_with_retries(
     inventory_reserved_event
 ):
     """
-    ✅ Test pago fallido después de 3 retries
+    Test pago fallido después de 3 retries
     """
     mock_payment_processor.process = AsyncMock(
         side_effect=[
