@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession, create_async_engine, async_sessionmaker)
 from sqlalchemy.pool import NullPool
 from .settings import Settings
+from src.order_service.services.order_service import OrderService
 from src.order_service.core.rabbitmq import RabbitMQClient
 import os
 
@@ -30,6 +31,15 @@ AsyncSessionLocal = async_sessionmaker(
 
 rabbitmq_client: Optional[RabbitMQClient] = RabbitMQClient(
     os.getenv("AMQP_URL"))
+
+
+order_service: Optional[OrderService] = OrderService(AsyncSessionLocal())
+
+
+def get_order_service() -> OrderService:
+    if order_service is None:
+        raise RuntimeError("OrderService no inicializado")
+    return order_service
 
 
 def get_rabbitmq_client() -> RabbitMQClient:

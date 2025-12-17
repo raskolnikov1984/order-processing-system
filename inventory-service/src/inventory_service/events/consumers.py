@@ -10,10 +10,8 @@ async def start_consumers() -> None:
     await client.setup_consumer(
         queue_name="inventory_service_queue",
         routing_keys=[
-            "order.created",
             "order.*",
             "payment.*",
-            "inventory.*",
         ],
         callback=event_router.dispatch
     )

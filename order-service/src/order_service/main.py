@@ -5,6 +5,7 @@ from src.order_service.api.v1.endpoints import orders
 from src.order_service.core.config import settings
 from src.order_service.events.consumers import start_consumers
 from src.order_service.api.dependencies import rabbitmq_client
+from src.order_service.events import handlers
 from src.order_service.logger import logger
 import asyncio
 
@@ -17,6 +18,8 @@ async def lifespan(app: FastAPI):
     # Conectar RabbitMQ
     await rabbitmq_client.connect()
 
+    logger.info(
+        f"Handlers registrados: {list(handlers.event_router.handlers.keys())}")
     # Iniciar consumidores en background
     asyncio.create_task(start_consumers())
 

@@ -35,12 +35,41 @@ class OrderCreatedEvent(BaseModel):
 
 
 class InventoryReservedEvent(BaseModel):
-    event_id: str
+    event_id: str = Field(
+        default_factory=lambda: f"evt_{datetime.now(UTC)}"
+    )
     event_type: EventType = EventType.INVENTORY_RESERVED
-    timestamp: datetime
+    timestamp: datetime = Field(
+        default_factory=lambda: datetime.now(UTC))
     order_id: str
     reservation_id: str
-    items_reserved: List[Item]
+
+
+class InventoryUnavailableEvent(BaseModel):
+    event_id: str = Field(
+        default_factory=lambda: f"evt_{datetime.now(UTC)}"
+    )
+    event_type: EventType = EventType.INVENTORY_UNAVAILABLE
+    timestamp: datetime = Field(
+        default_factory=lambda: datetime.now(UTC))
+    order_id: str
+    reason: str
+
+
+class OrderConfirmedEvent(BaseModel):
+    event_id: str = Field(default_factory=lambda: f"evt_{datetime.now(UTC)}")
+    event_type: EventType = EventType.ORDER_CONFIRMED
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    order_id: str
+    reservation_id: str
+
+
+class OrderCancelledEvent(BaseModel):
+    event_id: str = Field(default_factory=lambda: f"evt_{datetime.now(UTC)}")
+    event_type: EventType = EventType.ORDER_CANCELLED
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    order_id: str
+    cancellation_reason: str
 
 
 class PaymentProcessedeEvent:
