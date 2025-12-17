@@ -72,6 +72,12 @@ namespace :pay do
     compose('exec', 'payment-service', 'bash')
   end
 
+  desc 'Payment Crear y Aplicar Migracion'
+  task :migrate, [:description]  do |_, args|
+    compose('exec', 'payment-service', "alembic revision --autogenerate -m '#{args.description}'")
+    compose('exec', 'payment-service', 'alembic upgrade head')
+  end
+
   desc 'Monitorear salida Payment Service'
   task :tail do
     compose('logs', '-f', '-n 50', 'payment-service', compose: COMPOSE_TEST)

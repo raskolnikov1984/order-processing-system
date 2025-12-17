@@ -1,7 +1,9 @@
 import asyncio
 import random
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.payment_service.models.schemas import Payment
 from typing import Tuple
+from src.payment_service.models.database import db_create_payment
 from src.payment_service.logger import logger
 
 
@@ -12,6 +14,7 @@ class PaymentProcessor:
 
     def __init__(self, db_session: AsyncSession):
         self.success_rate = 0.8
+        self.db_session = db_session
 
     async def process(
         self, order_id: str,
@@ -35,6 +38,15 @@ class PaymentProcessor:
         # 80% éxito
         if random.random() < self.success_rate:
             payment_id = f"pay_{order_id}_{random.randint(1000, 9999)}"
+
+            payment = Payment(
+                payment_id=payment_id,
+                order_id=order_id,
+                amount=amount
+            )
+
+            db_create_payment(self.db_session, payment)
+
             logger.info(f"Pago exitoso: {payment_id}")
 
             return True, payment_id, None

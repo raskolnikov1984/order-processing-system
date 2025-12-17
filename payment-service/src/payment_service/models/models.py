@@ -15,7 +15,7 @@ class PaymentSQL(Base):
     order_id = Column(String, nullable=False, index=True)
     payment_id = Column(String, unique=True, nullable=False)
     amount = Column(Float, nullable=False)
-    status = Column(String, default="PENDING")
+    status = Column(String, default="PROCESSED")
     retry_count = Column(Integer, default=0)
     gateway_response = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
