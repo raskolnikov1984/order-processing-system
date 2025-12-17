@@ -58,7 +58,42 @@ namespace :inventory do
   task :tail do
     compose('logs', '-f', '-n 50', 'inventory-service', compose: COMPOSE_TEST)
   end
+end
 
+desc 'Payment Service'
+namespace :pay do
+  desc 'Payment Service TDD'
+  task :tdd do
+    compose('exec', 'payment-service', 'pytest -vvv')
+  end
+
+  desc 'Payment Service Shell'
+  task :sh do
+    compose('exec', 'payment-service', 'bash')
+  end
+
+  desc 'Monitorear salida Payment Service'
+  task :tail do
+    compose('logs', '-f', '-n 50', 'payment-service', compose: COMPOSE_TEST)
+  end
+end
+
+desc 'Notification Service'
+namespace :noti do
+  desc 'Notification Service TDD'
+  task :tdd do
+    compose('exec', 'payment-service', 'pytest -vvv')
+  end
+
+  desc 'Notification Service Shell'
+  task :sh do
+    compose('exec', 'payment-service', 'bash')
+  end
+
+  desc 'Monitorear salida Notification Service'
+  task :tail do
+    compose('logs', '-f', '-n 50', 'payment-service', compose: COMPOSE_TEST)
+  end
 end
 
 DOCKER_COMPOSE_TEST=COMPOSE_TEST
