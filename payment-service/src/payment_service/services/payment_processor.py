@@ -45,8 +45,9 @@ class PaymentProcessor:
                 amount=amount
             )
 
-            db_create_payment(self.db_session, payment)
+            payment_created = await db_create_payment(payment, self.db_session)
 
+            logger.info(f"Pago creado en DB con ID: {payment_created.id}")
             logger.info(f"Pago exitoso: {payment_id}")
 
             return True, payment_id, None
