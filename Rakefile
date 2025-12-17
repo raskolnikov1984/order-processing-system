@@ -82,17 +82,17 @@ desc 'Notification Service'
 namespace :noti do
   desc 'Notification Service TDD'
   task :tdd do
-    compose('exec', 'payment-service', 'pytest -vvv')
+    compose('exec', 'notification-service', 'pytest -vvv')
   end
 
   desc 'Notification Service Shell'
   task :sh do
-    compose('exec', 'payment-service', 'bash')
+    compose('exec', 'notification-service', 'bash')
   end
 
   desc 'Monitorear salida Notification Service'
   task :tail do
-    compose('logs', '-f', '-n 50', 'payment-service', compose: COMPOSE_TEST)
+    compose('logs', '-f', '-n 50', 'notification-service', compose: COMPOSE_TEST)
   end
 end
 
