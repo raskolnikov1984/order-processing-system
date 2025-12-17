@@ -13,7 +13,7 @@ from src.inventory_service.api.dependencies import get_inventory_service
 @event_router.register_decorator("OrderCreated")
 async def handle_order_created(event_data: dict):
     """Maneja creación de orden: reserva inventario o emite fallo"""
-    logger.info(f"📦 OrderCreated recibido: {event_data['order_id']}")
+    logger.info(f"OrderCreated recibido: {event_data['order_id']}")
 
     order_event = OrderCreatedEvent(**event_data)
 
