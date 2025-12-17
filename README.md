@@ -35,62 +35,68 @@ La estructura de directorios en `src/service_name/`` sigue principios de Clean A
 
 ### api/
 
-**Propósito:** Capa de presentación y transporte
-**Contenido:** Routers, endpoints HTTP y dependencias de FastAPI (Depends())
-
-**Justificación:** Separación de responsabilidades: Los endpoints están desacoplados de la lógica de negocio
-**Reusabilidad:** Las dependencias (get_async_session, get_rabbitmq_client) son compartidas entre endpoints
-**Testing:** Facilita el mocking de peticiones HTTP sin tocar la lógica interna
+- **Propósito:** Capa de presentación y transporte
+- **Contenido:** Routers, endpoints HTTP y dependencias de FastAPI (Depends())
+- **Justificación:** Separación de responsabilidades: Los endpoints están desacoplados de la lógica de negocio
+- **Reusabilidad:** Las dependencias (get_async_session, get_rabbitmq_client) son compartidas entre endpoints
+- **Testing:** Facilita el mocking de peticiones HTTP sin tocar la lógica interna
 
 ### core/
-**Propósito:** Configuración central y utilidades.
-**Contenido:** Configuración de base de datos, conexiones, constantes
 
-**Justificación:** Single Source of Truth: Todos los componentes usan la misma configuración
-**Inyección de dependencias:** Centraliza la creación de sesiones y conexiones
+- **Propósito:** Configuración central y utilidades.
+- **Contenido:** Configuración de base de datos, conexiones, constantes
+- **Justificación:** Single Source of Truth: Todos los componentes usan la misma configuración
+- **Inyección de dependencias:** Centraliza la creación de sesiones y conexiones
 
 ## events/
 
-**Propósito:** Comunicación asíncrona y event-driven architecture
-**Contenido:** Modelos de eventos, publishers y cosumers de RabbitMQ
-**Justificación:** Comunicación desacoplada: El servicio publica eventos sin conocer consumidores
-**Evolución independiente:** Poder cambiar componentes sin modificar lógica de negocio
+- **Propósito:** Comunicación asíncrona y event-driven architecture
+- **Contenido:** Modelos de eventos, publishers y cosumers de RabbitMQ
+- **Justificación:** Comunicación desacoplada: El servicio publica eventos sin conocer consumidores
+- **Evolución independiente:** Poder cambiar componentes sin modificar lógica de negocio
 
 ## models/
 
-**Propósito:** Capa de datos y modelos de dominio
-**Contenido:** schemas.py: Pydantic models para validación de entrada/salida, database.py: SQLAlchemy ORM models y queries, events.py: Modelos de eventos (DTOs para mensajería)
-**Justificación:** Validación estricta: Pydantic asegura el contrato de la API
-**Separación de concerns:** Los modelos de DB y de API evolucionan independientemente
-**Tipado Seguro:** Refuerza la integridad de datos en toda la aplicación
-services/
-Propósito: Lógica de negocio pura
-Contenido: db_create_order, db_get_order_status y reglas de negocio
-Justificación:
-Clean Business Logic: Independiente del framework (FastAPI) y del transporte (HTTP)
-Reusabilidad: Los mismos servicios pueden ser llamados desde CLI, jobs o GraphQL
-Testing unitario: Puedes probar lógica sin levantar servidor HTTP
-main.py
-Propósito: Punto de entrada y ensamblado de la aplicación
-Justificación: Orquesta todos los componentes mantiene el bootstrapping mínimo
-🎯 Beneficios Clave de esta Arquitectura
-Table
-Copy
-Beneficio	Cómo se logra
-Escalabilidad	Cada capa puede escalar independientemente (más workers de API, pool de conexiones a DB)
-Mantenibilidad	Cambios en un componente no afectan otros (ej: modificar schemas no rompe la DB)
-Testabilidad	Mocks específicos por capa (AsyncClient para API, AsyncMock para eventos)
-Observabilidad	Logging centralizado en logger.py con contexto de cada capa
-Evolución	Puedes migrar a gRPC o GraphQL cambiando solo api/, no toda la app
-🔧 Decisiones Técnicas
-AsyncIO en toda la pila: Desde API hasta queries SQLAlchemy, maximiza throughput
-Event-Driven: publish_order_created() con asyncio.create_task() para no bloquear respuestas HTTP
-Dependency Injection: FastAPI's Depends() + fábricas en core/ para testability
-Migraciones como código: Alembic controla tanto schema como datos semilla
-Esta estructura soporta fácilmente futuras expansiones como:
-workers/ (consumidores de cola)
-integrations/ (clientes de otros microservicios)
-strategies/ (implementaciones de algoritmos de pricing, descuentos)
+- **Propósito:** Capa de datos y modelos de dominio
+- **Contenido:** schemas.py: Pydantic models para validación de entrada/salida, database.py: SQLAlchemy ORM models y queries, events.py: Modelos de eventos (DTOs para mensajería)
+- **Justificación:** Validación estricta: Pydantic asegura el contrato de la API
+- **Separación de concerns:** Los modelos de DB y de API evolucionan independientemente
+- **Tipado Seguro:** Refuerza la integridad de datos en toda la aplicación
+
+## services/
+
+- **Propósito:** ontener las reglas y flujos de negocio, independientes de frameworks.
+- **Contenido:**  reglas de negocio
+- **Justificación:** Single Responsibility: Cada método maneja una transición de estado específica del dominio
+- **Reusabilidad:** Los mismos servicios pueden ser llamados desde CLI, jobs o GraphQL
+- **Testing unitario:** Puedes probar lógica sin levantar servidor HTTP
+
+## main.py
+
+- **Propósito:** Punto de entrada y ensamblado de la aplicación
+- **Justificación:** Orquesta todos los componentes mantiene el bootstrapping mínimo
+
+# Decisiones Técnicas
+
+- **AsyncIO en toda la pila:** Desde API hasta queries SQLAlchemy
+- **Event-Driven:** publish_order_created() con asyncio.create_task() para no bloquear respuestas HTTP
+- **Dependency Injection:** FastAPI's Depends() 
+- **Migraciones como código:** Alembic controla tanto schema como datos semilla
+- **Uso del Patron Router**:
+
+Sin un router, el manejo de eventos se convierte en un anti-patrón del tipo:
+
+```
+async def handle_message(message):
+    event_type = message.get("event_type")
+    if event_type == "InventoryReserved":
+        await process_inventory(message)
+    elif event_type == "PaymentProcessed":
+        await process_payment(message)
+    # ... 10+ eventos más
+```
+
+Implementando esta logica usando If se violan principios SOLID (OCP). Un cambio afecta múltiples casos de prueba. No permite escalabilidad, Ejemplo 20+ eventos crean una función de demasiado extensa líneas
 
 # Deploy
 
