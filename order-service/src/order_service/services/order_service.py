@@ -10,11 +10,41 @@ class OrderService:
     def __init__(self, db_session: AsyncSession):
         self.db = db_session
 
+    async def process_order(self, order_id: str) -> bool:
+        stmt = (
+            update(OrderSQL)
+            .where(OrderSQL.id == int(order_id))
+            .values(status="PAYMENT_PROCESSING")
+        )
+        result = await self.db.execute(stmt)
+        await self.db.commit()
+
+        if result.rowcount > 0:
+            logger.info(f"Orden {order_id} PROCESADA")
+            return True
+
+        logger.warning(f"Orden {order_id} no encontrada para procesar")
+
+    async def process_failed_order(self, order_id: str) -> bool:
+        stmt = (
+            update(OrderSQL)
+            .where(OrderSQL.id == int(order_id))
+            .values(status="PAYMENT_FAILED")
+        )
+        result = await self.db.execute(stmt)
+        await self.db.commit()
+
+        if result.rowcount > 0:
+            logger.info(f"Orden {order_id} PROCESADA")
+            return True
+
+        logger.warning(f"Orden {order_id} no encontrada para procesar")
+
     async def confirm_order(self, order_id: str) -> bool:
         """Cambia estado a CONFIRMED cuando inventario está reservado"""
         stmt = (
             update(OrderSQL)
-            .where(OrderSQL.id == order_id)
+            .where(OrderSQL.id == int(order_id))
             .values(status="CONFIRMED")
         )
         result = await self.db.execute(stmt)

@@ -20,7 +20,6 @@ class Item(BaseModel):
     price: float
 
 
-
 class InventoryReservedEvent(BaseModel):
     event_id: str
     event_type: str

@@ -64,6 +64,13 @@ class OrderConfirmedEvent(BaseModel):
     reservation_id: str
 
 
+class OrderCompletedEvent(BaseModel):
+    event_id: str = Field(default_factory=lambda: f"evt_{datetime.now(UTC)}")
+    event_type: EventType = EventType.ORDER_COMPLETED
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    order_id: str
+
+
 class OrderCancelledEvent(BaseModel):
     event_id: str = Field(default_factory=lambda: f"evt_{datetime.now(UTC)}")
     event_type: EventType = EventType.ORDER_CANCELLED
@@ -72,9 +79,20 @@ class OrderCancelledEvent(BaseModel):
     cancellation_reason: str
 
 
-class PaymentProcessedeEvent:
-    pass
+class PaymentProcessedEvent(BaseModel):
+    event_id: str = Field(default_factory=lambda: f"evt_{datetime.now(UTC)}")
+    event_type: EventType = EventType.PAYMENT_PROCESSED
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    order_id: str
+    payment_id: str
+    amount: float
 
 
-class PaymentFailedEvent:
-    pass
+class PaymentFailedEvent(BaseModel):
+    event_id: str = Field(default_factory=lambda: f"evt_{datetime.now(UTC)}")
+    event_type: EventType = EventType.PAYMENT_FAILED
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    order_id: str
+    amount: float
+    reason: str
+    retry_count: int = 0
