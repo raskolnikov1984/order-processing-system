@@ -1,1 +1,141 @@
 # order-processing-system
+
+Sistema de e-commerce usando una arquitectura de microservicios con comunicación asíncrona mediante RabbitMQ, orquestación con Docker Compose y gestión de bases de datos PostgreSQL con Alembic. Proyecto desarrollado en Python con usando Poetry como gestor dependencias.
+
+# Requerimientos:
+
+- Docker version 28.4.0
+- Docker Compose version 2.39.4
+- rake, version 13.3.0
+- ruby 3.4.5 (2025-07-16)
+- Python 3.13.7
+
+# Componentes:
+
+| Componente               | Tecnología            | Puerto     | Descripción                                   |
+| ------------------------ | --------------------- | ---------- | --------------------------------------------- |
+| **Message Broker**       | RabbitMQ 3-management | 5672/15672 | Colas de mensajes para comunicación asíncrona |
+| **Order Service**        | Python/FastAPI        | 8010       | Gestión de pedidos y órdenes de compra        |
+| **Inventory Service**    | Python/FastAPI        | 8011       | Control de stock y gestión de productos       |
+| **Payment Service**      | Python/FastAPI        | 8012       | Procesamiento de pagos y transacciones        |
+| **Notification Service** | Python/FastAPI        | 8013       | Envío de Notificaciones
+| **Order Database**       | PostgreSQL 18         | (interno)  | `order_data` - Volúmen persistente            |
+| **Inventory Database**   | PostgreSQL 18         | (interno)  | `inventory_data` - Volúmen persistente        |
+| **Payment Database**     | PostgreSQL 18         | (interno)  | `payment_data` - Volúmen persistente          |
+
+# Arquitectura
+
+![Arquitectura](./images/architecture.png)
+
+
+# Deploy
+
+1. Clonar el repositorio
+
+```
+git clone <repository-url>
+cd nombre-del-proyecto
+```
+
+2. Configurar variables de entorno personalizadas. En el momento de clonar el repositorio ya cuenta con un archivo .env estandar
+
+```
+POSTGRES_PASSWORD="SUp3r-pass*DB"
+
+POSTGRES_ORDER_DB="order_service"
+POSTGRES_INVENTORY_DB="inventory_service"
+POSTGRES_PAYMENT_DB="payment_service"
+
+ORDER_API_PORT=8010
+INVENTORY_API_PORT=8011
+PAYMENT_API_PORT=8012
+NOTIFICATION_API_PORT=8013
+
+AMQP_URL=amqp://guest:guest@rabbitmq:5672/
+AMQP_PORT=5672
+UI_PORT=15672
+```
+
+3. Desplegar el entorno completo.
+
+```
+# Construir y levantar todos los servicios
+rake up
+
+# El comando ejecuta:
+# docker compose -f docker-compose.yml up --build -d
+```
+
+> Esto iniciará en orden: RabbitMQ → Bases de datos → Microservicios (con healthchecks)
+
+# Comando Disponibles (Rake Tasks)
+
+## Gestión Globla del Entorno
+
+| Comando        | Descripción                                                               |
+| -------------- | ------------------------------------------------------------------------- |
+| `rake up`      | Construir y levantar todos los servicios.                 |
+| `rake restart` | Reiniciar todos los contenedores                                          |
+| `rake del`     | Eliminar contenedores, volúmenes Y eliminar **todas** las imágenes Docker |
+
+
+## Order Service
+
+| Comando                             | Descripción                                        |
+| ----------------------------------- | -------------------------------------------------- |
+| `rake order:sh`                     | Acceder a la shell bash del contenedor             |
+| `rake order:tdd`                    | Ejecutar tests con pytest en modo verbose (`-vvv`) |
+| `rake order:migrate['descripción']` | Crear y aplicar migración de BD con Alembic        |
+| `rake order:tail`                   | Monitorear logs en tiempo real (últimas 50 líneas) |
+
+## Inventory Service
+
+| Comando               | Descripción                               |
+| --------------------- | ----------------------------------------- |
+| `rake inventory:sh`   | Acceder a la shell bash del contenedor    |
+| `rake inventory:tdd`  | Ejecutar tests con pytest en modo verbose |
+| `rake inventory:tail` | Monitorear logs en tiempo real            |
+
+## Payment Service
+
+| Comando                           | Descripción                                 |
+| --------------------------------- | ------------------------------------------- |
+| `rake pay:sh`                     | Acceder a la shell bash del contenedor      |
+| `rake pay:tdd`                    | Ejecutar tests con pytest en modo verbose   |
+| `rake pay:migrate['descripción']` | Crear y aplicar migración de BD con Alembic |
+| `rake pay:tail`                   | Monitorear logs en tiempo real              |
+
+## Notification Service
+
+| Comando          | Descripción                               |
+| ---------------- | ----------------------------------------- |
+| `rake noti:sh`   | Acceder a la shell bash del contenedor    |
+| `rake noti:tdd`  | Ejecutar tests con pytest en modo verbose |
+| `rake noti:tail` | Monitorear logs en tiempo real            |
+
+# Test
+
+Ejecutar tests de un servicio
+
+# Testear order-service
+rake order:tdd
+
+# Testear inventory-service
+rake inventory:tdd
+
+# Testear todos los servicios secuencialmente
+```
+rake order:tdd && rake inventory:tdd && rake pay:tdd && rake noti:tdd
+```
+
+# Migraciones
+```
+# Sintaxis: rake {service}:migrate['descripción']
+rake order:migrate['add order_status column with index']
+rake pay:migrate['add payment_method enum']
+
+# Las migraciones se crean y aplican automáticamente en dos pasos:
+# 1. alembic revision --autogenerate -m 'descripción'
+# 2. alembic upgrade head
+```
+> Nota: El notification-service no tiene base de datos PostgreSQL configurada en docker-compose.yml, por lo que no tiene tarea migrate.
